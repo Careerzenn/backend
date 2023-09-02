@@ -20,11 +20,13 @@ export interface Profile {
 export class PolybaseService {
   db: Polybase;
   profile: Collection<any>;
+  follow: Collection<any>;
 
   //initiate polybase.
   constructor() {
     this.db = getPolybaseInstance();
     this.profile = this.db.collection('User');
+    this.follow = this.db.collection('Followers');
   }
 
   async getProfileByAddress(address: string): Promise<any> {
@@ -55,6 +57,54 @@ export class PolybaseService {
     return { status: true, message: 'profile created successfully' };
   }
 
+  async startFollow(address: string, signedMessage: string): Promise<any> {
+    //need to verify this as well, but for now it's okay.
+    try {
+      await this.follow.create([address, signedMessage]);
+    } catch (error) {
+      return { status: false, message: error };
+    }
+    return { status: true, message: 'followed successfully' };
+  }
+
+  async getFollowers(address: string): Promise<any> {
+    //get all the folloewers of a users.
+    try {
+      const response = await this.follow.where('follower', '==', address).get();
+
+      const followers = [];
+      for (const item of response.data) {
+        try {
+          followers.push(item.data.followee);
+        } catch (error) {
+          console.log(error);
+        }
+      }
+      return followers;
+    } catch (e) {
+      console.log(e);
+      return e;
+    }
+  }
+  async getFollowing(address: string): Promise<any> {
+    try {
+      const response = await this.follow.where('followee', '==', address).get();
+      console.log('success');
+      const followers = [];
+      for (const item of response.data) {
+        try {
+          followers.push(item.data.follower);
+        } catch (error) {
+          console.log(error);
+        }
+      }
+      return followers;
+    } catch (e) {
+      console.log(e);
+      return e;
+    }
+  }
+
   async updateProfile(): Promise<any> {
     return null;
   }
@@ -63,7 +113,7 @@ export class PolybaseService {
     return null;
   }
 
-  async unfollowProfile(): Promise<any> {
-    return null;
+  async unfollowProfile(address: string): Promise<any> {
+    return address;
   }
 }
