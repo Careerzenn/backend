@@ -5,6 +5,7 @@ import {
   Get,
   NotFoundException,
   Param,
+  Post,
 } from '@nestjs/common';
 import { PolybaseService, Profile } from './polybase.service';
 
@@ -20,7 +21,7 @@ export class PolybaseController {
     return result;
   }
 
-  @Get('/create')
+  @Post('/create')
   async createProfile(@Body() formData: Profile) {
     const result = await this.svc.createProfile(formData);
     console.log(result);
